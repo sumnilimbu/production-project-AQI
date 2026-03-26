@@ -12,6 +12,7 @@ from app import app
 from models.database import db
 from models.sensor_reading import SensorReading
 from config import Config
+from services.aqi_service import calculate_pm25_aqi, determine_fan_status
 
 
 def on_connect(client, userdata, flags, rc, properties=None):
@@ -30,21 +31,42 @@ def on_message(client, userdata, msg):
 
         data = json.loads(payload)
 
+        station_name = data.get("station_name")
+        pm25 = float(data.get("pm25"))
+        pm10 = float(data.get("pm10"))
+        temperature = data.get("temperature")
+        humidity = data.get("humidity")
+        co2 = data.get("co2")
+
+        aqi = calculate_pm25_aqi(pm25)
+
         with app.app_context():
+            previous_industrial = (
+                SensorReading.query
+                .filter_by(station_name="Industrial")
+                .order_by(SensorReading.timestamp.desc())
+                .first()
+            )
+
+            previous_fan_status = previous_industrial.fan_status if previous_industrial else "OFF"
+            fan_status = determine_fan_status(station_name, aqi, previous_fan_status)
+
             new_reading = SensorReading(
-                device_id=data.get("device_id"),
-                pm25=data.get("pm25"),
-                pm10=data.get("pm10"),
-                temperature=data.get("temperature"),
-                humidity=data.get("humidity"),
-                co2=data.get("co2"),
+                station_name=station_name,
+                pm25=pm25,
+                pm10=pm10,
+                temperature=temperature,
+                humidity=humidity,
+                co2=co2,
+                aqi=aqi,
+                fan_status=fan_status,
                 timestamp=datetime.utcnow()
             )
 
             db.session.add(new_reading)
             db.session.commit()
 
-            print("Sensor reading saved to database!")
+            print(f"Saved {station_name} reading | AQI={aqi} | Fan={fan_status}")
 
     except Exception as e:
         print(f"Error processing MQTT message: {e}")
