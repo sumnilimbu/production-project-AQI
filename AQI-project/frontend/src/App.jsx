@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { Routes, Route, Link } from "react-router-dom";
 import {
   LineChart,
   Line,
@@ -9,8 +10,9 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
+import Admin from "./pages/Admin";
 
-export default function App() {
+function Dashboard() {
   const [data, setData] = useState([]);
   const [error, setError] = useState("");
 
@@ -22,7 +24,7 @@ export default function App() {
           return res.json();
         })
         .then((result) => {
-          setData(result);
+          setData(Array.isArray(result) ? result : []);
           setError("");
         })
         .catch((err) => setError(err.message));
@@ -109,9 +111,18 @@ export default function App() {
   return (
     <div className="min-h-screen bg-slate-100 py-8">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <h1 className="mb-8 text-center text-3xl font-bold text-slate-800">
-          Air Quality Monitoring Dashboard
-        </h1>
+        <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <h1 className="text-center text-3xl font-bold text-slate-800 sm:text-left">
+            Air Quality Monitoring Dashboard
+          </h1>
+
+          <Link
+            to="/admin"
+            className="inline-block rounded-lg bg-slate-800 px-4 py-2 text-center text-white hover:bg-slate-700"
+          >
+            Go to Admin Page
+          </Link>
+        </div>
 
         {error && (
           <p className="mb-6 text-center font-medium text-red-600">
@@ -252,7 +263,8 @@ export default function App() {
                     {latestForest.humidity} %
                   </p>
                   <p>
-                    <span className="font-semibold">CO2:</span> {latestForest.co2}
+                    <span className="font-semibold">CO2:</span>{" "}
+                    {latestForest.co2}
                   </p>
                   <p>
                     <span className="font-semibold">Fan Status:</span>{" "}
@@ -398,5 +410,33 @@ export default function App() {
         </div>
       </div>
     </div>
+  );
+}
+
+function AdminWithNav() {
+  return (
+    <>
+      <div className="bg-slate-800 px-4 py-3 text-white">
+        <div className="mx-auto flex max-w-7xl items-center justify-between">
+          <p className="font-semibold">AQI Admin Panel</p>
+          <Link
+            to="/"
+            className="rounded-lg bg-white px-4 py-2 text-slate-800 hover:bg-slate-100"
+          >
+            Back to Dashboard
+          </Link>
+        </div>
+      </div>
+      <Admin />
+    </>
+  );
+}
+
+export default function App() {
+  return (
+    <Routes>
+      <Route path="/" element={<Dashboard />} />
+      <Route path="/admin" element={<AdminWithNav />} />
+    </Routes>
   );
 }
