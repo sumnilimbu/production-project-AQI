@@ -16,10 +16,7 @@ function StationCard({ station }) {
       <p><strong>AQI:</strong> {station.aqi ?? "N/A"}</p>
       <p><strong>Category:</strong> {station.aqi_category ?? "N/A"}</p>
       <p><strong>PM2.5:</strong> {station.pm25 ?? "N/A"}</p>
-      <p><strong>PM10:</strong> {station.pm10 ?? "N/A"}</p>
       <p><strong>Temperature:</strong> {station.temperature ?? "N/A"} °C</p>
-      <p><strong>Humidity:</strong> {station.humidity ?? "N/A"} %</p>
-      <p><strong>CO2:</strong> {station.co2 ?? "N/A"}</p>
       {isIndustrial && <p><strong>Fan Status:</strong> {station.fan_status ?? "N/A"}</p>}
       <p><strong>Last Updated:</strong> {station.timestamp ?? "N/A"}</p>
     </div>
